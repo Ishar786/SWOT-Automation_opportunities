@@ -1,1 +1,3 @@
-# SWOT-Automation_opportunities
+streamlit
+google-generativeai
+python-dotenv
