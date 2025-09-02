@@ -3,23 +3,15 @@
 import streamlit as st
 import google.generativeai as genai
 import textwrap
-import os
-from dotenv import load_dotenv
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="SWOT Point Generator",
-    page_icon="✍",
+    page_icon="✍️",
     layout="wide"
 )
 
-# --- LOAD ENVIRONMENT VARIABLES FOR LOCAL DEVELOPMENT ---
-# This line is for running the app locally. It loads the API key from a .env file.
-# When deployed on Streamlit Community Cloud, you will set this as a secret.
-load_dotenv()
-
-# --- THE STYLE GUIDE (EXAMPLES) ---
-# This dictionary holds the perfect example for each SWOT category.
+# --- THE STYLE GUIDE & PROMPTS (No Changes Here) ---
 SWOT_EXAMPLES = {
     "Opportunity": [
         textwrap.dedent("""
@@ -39,8 +31,6 @@ SWOT_EXAMPLES = {
     ]
 }
 
-# --- THE PROMPT LIBRARY (WRITING FORMULAS) ---
-# This dictionary holds the unique, step-by-step writing formula for each category.
 SWOT_PROMPTS = {
     "Opportunity": """
     You are a business analyst who MUST follow a very specific writing formula to identify an OPPORTUNITY.
@@ -64,15 +54,14 @@ SWOT_PROMPTS = {
     """
 }
 
-# --- THE AI ANALYSIS ENGINE ---
-# This function assembles the prompt and calls the AI model.
+# --- THE AI ANALYSIS ENGINE (No Changes Here) ---
 def generate_swot_point(text: str, swot_category: str, api_key: str) -> str:
     """Generates a SWOT point by calling the Google Generative AI."""
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-flash')
     except Exception as e:
-        return f"Error configuring the AI model: {e}. Please check your API key."
+        return f"Error configuring the AI model: {e}. It's possible the API key is invalid."
 
     prompt_formula = SWOT_PROMPTS.get(swot_category)
     example_list = SWOT_EXAMPLES.get(swot_category)
@@ -104,50 +93,19 @@ def generate_swot_point(text: str, swot_category: str, api_key: str) -> str:
     except Exception as e:
         return f"An error occurred during AI analysis: {e}"
 
+# --- STREAMLIT USER INTERFACE (Updated Logic) ---
 
-# --- STREAMLIT USER INTERFACE ---
 st.title("SWOT Analysis Point Generator")
-st.markdown("This tool uses AI to analyze a press release or article and generate a concise SWOT (Strengths, Weaknesses, Opportunities, Threats) paragraph based on a specific writing formula.")
+st.markdown("This tool analyzes an article to generate a concise SWOT paragraph based on a specific writing formula.")
 
-# --- API Key Handling ---
-# Try to get the API key from Streamlit secrets first (for deployed app)
-# Then try from environment variables (for local .env file)
-# Finally, fall back to a text input for the user to provide it directly
-api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+# --- API Key Handling in Sidebar ---
+st.sidebar.header("Configuration")
+api_key_input = st.sidebar.text_input(
+    "Enter your Google API Key:",
+    type="password",
+    help="Your key is not stored. It is only used for this session."
+)
 
-if not api_key:
-    st.warning("Google API Key not found. Please enter it below to proceed.")
-    api_key = st.text_input("Enter your Google API Key:", type="password", key="api_key_input")
-
-if api_key:
-    st.success("API Key loaded successfully!")
-
-    # --- INPUT FIELDS ---
-    st.header("1. Enter Your Information")
-    col1, col2 = st.columns(2)
-    with col1:
-        company_name = st.text_input("Enter the Company Name:", value="Reliance Industries")
-    with col2:
-        swot_category = st.selectbox("Select SWOT Category:", options=["Opportunity", "Weakness"])
-
-    st.header("2. Paste the Article Text")
-    article_text = st.text_area("Paste the full text of the article or press release below:", height=300)
-
-    # --- GENERATE BUTTON AND OUTPUT ---
-    if st.button("Generate SWOT Point", type="primary", use_container_width=True):
-        if not company_name.strip():
-            st.error("Please enter a company name.")
-        elif not article_text.strip():
-            st.error("Please paste the article text.")
-        else:
-            with st.spinner(f"Analyzing text for '{company_name}' to find a potential {swot_category}..."):
-                # We don't need the company_name in the function call anymore
-                # as the model infers it from the text, but you could add it back
-                # to the prompt if needed.
-                swot_paragraph = generate_swot_point(article_text, swot_category, api_key)
-
-                st.header("3. Generated Paragraph")
-                st.markdown(swot_paragraph)
-
-else:
-    st.error("Please provide a Google API Key to use the application.")
+# Use session state to hold the API key
+if api_key_input:
+    st.session_state.api_key = api_key_input
