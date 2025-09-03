@@ -7,7 +7,7 @@ import textwrap
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="SWOT Point Generator",
-    page_icon="✍️",
+    page_icon="",
     layout="wide"
 )
 
@@ -95,7 +95,7 @@ def generate_swot_point(text: str, swot_category: str, api_key: str) -> str:
 
 # --- STREAMLIT USER INTERFACE (Updated Logic) ---
 
-st.title("✍️ SWOT Analysis Point Generator")
+st.title("SWOT Analysis Point Generator")
 st.markdown("This tool analyzes an article to generate a concise SWOT paragraph based on a specific writing formula.")
 
 # --- API Key Handling in Sidebar ---
@@ -131,7 +131,7 @@ if 'api_key' in st.session_state and st.session_state.api_key:
     article_text = st.text_area("Paste the full text of the article or press release below:", height=300)
 
     # --- GENERATE BUTTON AND OUTPUT ---
-    if st.button("✨ Generate SWOT Point", type="primary", use_container_width=True):
+    if st.button("Generate SWOT Point", type="primary", use_container_width=True):
         if not company_name.strip():
             st.error("Please enter a company name.")
         elif not article_text.strip():
