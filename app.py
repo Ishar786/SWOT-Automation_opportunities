@@ -7,7 +7,7 @@ import textwrap
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="SWOT Point Generator",
-    page_icon="",
+    page_icon="📝",
     layout="wide"
 )
 
