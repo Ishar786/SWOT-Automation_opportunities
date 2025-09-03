@@ -95,7 +95,7 @@ def generate_swot_point(text: str, swot_category: str, api_key: str) -> str:
 
 # --- STREAMLIT USER INTERFACE (Updated Logic) ---
 
-st.title("SWOT Analysis Point Generator")
+st.title("✍️ SWOT Analysis Point Generator")
 st.markdown("This tool analyzes an article to generate a concise SWOT paragraph based on a specific writing formula.")
 
 # --- API Key Handling in Sidebar ---
@@ -106,6 +106,42 @@ api_key_input = st.sidebar.text_input(
     help="Your key is not stored. It is only used for this session."
 )
 
-# Use session state to hold the API key
-if api_key_input:
-    st.session_state.api_key = api_key_input
+# NEW: Add a button to explicitly set the key
+if st.sidebar.button("Set API Key", type="primary"):
+    if api_key_input:
+        st.session_state.api_key = api_key_input
+        # Rerun the app to make the main content appear immediately
+        st.rerun()
+    else:
+        st.sidebar.error("Please enter a key.")
+
+# Check if the API key is available in session state before proceeding
+if 'api_key' in st.session_state and st.session_state.api_key:
+    st.sidebar.success("API Key accepted. You can now generate an analysis.")
+    
+    # --- INPUT FIELDS ---
+    st.header("1. Enter Your Information")
+    col1, col2 = st.columns(2)
+    with col1:
+        company_name = st.text_input("Enter the Company Name:", value="Reliance Industries")
+    with col2:
+        swot_category = st.selectbox("Select SWOT Category:", options=["Opportunity", "Weakness"])
+
+    st.header("2. Paste the Article Text")
+    article_text = st.text_area("Paste the full text of the article or press release below:", height=300)
+
+    # --- GENERATE BUTTON AND OUTPUT ---
+    if st.button("✨ Generate SWOT Point", type="primary", use_container_width=True):
+        if not company_name.strip():
+            st.error("Please enter a company name.")
+        elif not article_text.strip():
+            st.error("Please paste the article text.")
+        else:
+            with st.spinner(f"Analyzing text for '{company_name}' to find a potential {swot_category}..."):
+                swot_paragraph = generate_swot_point(article_text, swot_category, st.session_state.api_key)
+                st.header("3. Generated Paragraph")
+                st.markdown(swot_paragraph)
+
+else:
+    st.info("Please enter your Google API Key in the sidebar and click 'Set API Key' to start.")
+    st.markdown("Your API key is cleared when you close the browser tab.")
